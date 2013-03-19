@@ -1,0 +1,87 @@
+This file records my thoughts on various HTML diff-related issues; it does not
+explain them. Paragraphs are not organised except by section; the required
+background varies wildly from paragraph to paragraph. Take what you read with a
+pinch of salt.
+
+
+HTML diff generally:
+
+sbp broke down the process of HTML diff into three parts:
+
+1. Parse the HTML properly
+2. Use a suitable diff algorithm
+3. Express the results as a sensible HTML tree
+
+While this is accurate, it's not just a pipeline-like any-in-any-out process.
+It's not possible to say "this HTML differ gets 2 right, this one gets 3 right,
+let's combine them ..." because the structures are fundamentally different at
+each stage.
+
+
+Path-based diff:
+
+As far as I know, my program's parsing algorithm is unique among HTML diffs;
+this is what gives it the power to give such good results.
+
+It can be explained by the fact that HTML is a hierarchical structure, and needs
+diffing in the same way that all other such structures are diffed. If I have two
+similar (hierarchical) directory structures and want to find out the what files
+are in one but not the other, I would attempt to diff a structure that looked
+like this as text, by comparing tags to tags:
+
+  <directory name=x>
+    <file>first.txt</file>
+    <directory name=y>
+      <file>second.html</file>
+    </directory>
+  </dir>
+
+No, instead I'd use find(1) and diff(1):
+
+cd x; find . > ~/xfiles
+cd y; find . > ~/yfiles
+diff -u ~/xfiles ~/yfiles
+
+Path-based HTML diff works similarly. It breaks the HTML down into a flat
+structure, with the "path" to each diffable node (words, in this program's case)
+treated much like find treats filenames in directories. Once this flat structure
+has been diffed, the original HTML tree is reassembled from the result.
+
+The three stages sbp outlines are really clear in the html_diff function, even
+though I didn't specifically write it with that in mind:
+
+def html_diff(a, b, insertion=default_ins, deletion=default_del):
+  aleaves, bleaves = (leaves(fragment_fromstring(x, create_parent='div')) for x in (a, b))
+  dleaves = diffleaves(aleaves, bleaves)
+  
+  return leaves2html(dleaves, insertion, deletion)
+
+leaves, diffleaves, and leaves2html represent the three stages of HTML diffing,
+respectively.
+
+
+leaves:
+
+Perhaps rename to tree2leaves or something like that.
+
+
+diffleaves:
+
+This needs cleaning up, it's rather repetitive.
+
+
+leaves2html:
+
+@@ Really, really need to sort out the </ins><ins> everywhere by looking for
+large blocks which can be wrapped in a single difference tag. Will have to use
+path_difference for that, to run forwards through the list and find the last
+leaf after which an <ins>/<del> can be inserted without breaking the tree
+structure.
+
+Regarding path_difference, I would like a cleaner version of the code I have
+now. But it works, so fuck it.
+
+
+lxml:
+
+It ſucks. It really ſucks.

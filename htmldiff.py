@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from lxml.html import fragment_fromstring
+from lxml.html.html5parser import fragment_fromstring
 from lxml.etree import XPath
 from difflib import SequenceMatcher
 import itertools, re
@@ -124,8 +124,10 @@ def leaves2html(leaves, insertion, deletion):
 ## classes
 
 class element:
+  stripnamespacere = re.compile(r'\A\{.+\}') # html5parser ſucks
+  
   def __init__(self, elt):
-    self.name = elt.tag
+    self.name = element.stripnamespacere.sub('', elt.tag)
     self.attrs = elt.attrib
     
   def start_tag(self):
