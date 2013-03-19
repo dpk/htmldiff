@@ -29,7 +29,8 @@ EmptyElements = {
 }
 SignificantAttrs = {
   'a': {'href'},
-  'img': {'src'}
+  'img': {'src'},
+  'embed': {'src'}
 }
 
 def default_ins(text):
@@ -200,21 +201,21 @@ def pairwise(iterable):
 # sbp wrote a better version: http://swhack.com/logs/2013-03-17#T17-35-18
 # but it returns iterators, which is not convenient
 def path_difference(a, b):
- switch = False
- if len(a) > len(b):
-   a, b = b, a
-   switch = True
+  switch = False
+  if len(a) > len(b):
+    a, b = b, a
+    switch = True
  
- sames = []
- lasti = -1
- for i, x in enumerate(a):
-   if a[i] == b[i]:
-     sames.append(x)
-     lasti = i
-   else:
-     break
+  sames = []
+  lasti = -1
+  for i, x in enumerate(a):
+    if a[i] == b[i]:
+      sames.append(x)
+      lasti = i
+    else:
+      break
  
- if not switch:
-   return (sames, a[lasti+1:], b[lasti+1:])
- else:
-   return (sames, b[lasti+1:], a[lasti+1:])
+  if not switch:
+    return (sames, a[lasti+1:], b[lasti+1:])
+  else:
+    return (sames, b[lasti+1:], a[lasti+1:])
